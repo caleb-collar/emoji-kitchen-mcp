@@ -1,6 +1,7 @@
 {
   "name": "emoji-kitchen-mcp",
   "version": "1.0.0",
+  "packageManager": "pnpm@11.22.0",
   "description": "Model Context Protocol (MCP) server for Google Emoji Kitchen",
   "type": "module",
   "bin": {

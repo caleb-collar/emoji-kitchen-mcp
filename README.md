@@ -367,7 +367,7 @@ Add `emoji-kitchen-mcp` in Cursor via **Settings > Features > MCP**:
 ```
 
 #### Option B: Remote SSE Server
-Start the server with `npm run serve` (or Docker) and point Cursor to the SSE endpoint:
+Start the server with `pnpm serve` (or Docker) and point Cursor to the SSE endpoint:
 ```json
 {
   "mcpServers": {
@@ -414,7 +414,7 @@ Or connect via the SSE transport:
 
 #### 1. Start Server in SSE Mode
 ```bash
-npm run serve
+pnpm serve
 # Server runs at http://0.0.0.0:3000
 ```
 
@@ -571,36 +571,36 @@ Options:
 ```bash
 git clone https://github.com/caleb-collar/emoji-kitchen-mcp.git
 cd emoji-kitchen-mcp
-npm install
+pnpm install
 ```
 
 ### Pre-download Metadata
 ```bash
-npm run prepare-data
+pnpm prepare-data
 ```
 
 ### Development Server (TSX)
 ```bash
-npm run dev
+pnpm dev
 ```
 
 ### Run Tests
 ```bash
-npm test
+pnpm test
 ```
 
 ### Production Build
 ```bash
-npm run build
+pnpm build
 ```
 
 ### Run Production Server
 ```bash
 # stdio mode
-npm start
+pnpm start
 
 # SSE mode
-npm run serve
+pnpm serve
 ```
 
 ---
