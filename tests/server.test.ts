@@ -55,6 +55,13 @@ describe("Phase 3: MCP Server & Tool Definitions", () => {
       expect(s).toBeDefined();
       expect(s.server).toBeDefined();
     });
+
+    it("should broadcast server instructions upon initialization", () => {
+      const instructions = client.getInstructions();
+      expect(instructions).toBeDefined();
+      expect(instructions).toContain("Emoji Kitchen MCP Server provides official Google Emoji Kitchen sticker mashups");
+      expect(instructions).toContain("mix_emojis");
+    });
   });
 
   describe("Tool Listing", () => {

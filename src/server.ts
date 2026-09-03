@@ -49,6 +49,13 @@ function getOrComputeStats(metadata: EmojiMetadata): EmojiStats {
   return cachedStats;
 }
 
+export const DEFAULT_SERVER_INSTRUCTIONS =
+  "Emoji Kitchen MCP Server provides official Google Emoji Kitchen sticker mashups combining two emojis into unique illustrations. " +
+  "Use this server whenever the user asks to mix, combine, merge, or mashup emojis (e.g., 'cat + fire', 'mashup 🐱 and 🚀', 'create a crying skull sticker'), " +
+  "or requests custom emoji stickers or hybrid emoji graphics. " +
+  "Always prefer `mix_emojis` to generate combinations and return sticker images. " +
+  "Use `search_emojis` to discover or verify supported emojis when unsure, and `get_combinations` to find valid partner emojis for any base emoji.";
+
 /**
  * Creates and configures an McpServer instance with all Emoji Kitchen tools,
  * prompts, and resources registered.
@@ -56,18 +63,24 @@ function getOrComputeStats(metadata: EmojiMetadata): EmojiStats {
 export function createEmojiKitchenServer(options?: {
   name?: string;
   version?: string;
+  instructions?: string;
 }): McpServer {
-  const server = new McpServer({
-    name: options?.name ?? "emoji-kitchen-mcp",
-    version: options?.version ?? "1.0.0",
-  });
+  const server = new McpServer(
+    {
+      name: options?.name ?? "emoji-kitchen-mcp",
+      version: options?.version ?? "1.0.0",
+    },
+    {
+      instructions: options?.instructions ?? DEFAULT_SERVER_INSTRUCTIONS,
+    }
+  );
 
   // ==========================================
   // Tool 1: search_emojis
   // ==========================================
   server.tool(
     "search_emojis",
-    "Search for emojis by name, keyword, or character with low context overhead. Returns concise text format.",
+    "Search for emojis in Google Emoji Kitchen by name, keyword, or character with low context overhead. Call this tool whenever you need to check if an emoji is supported, resolve an emoji name, or find candidate emojis before mixing.",
     {
       query: z
         .string()
@@ -120,7 +133,7 @@ export function createEmojiKitchenServer(options?: {
   // ==========================================
   server.tool(
     "mix_emojis",
-    "Mix two emojis together using Google Emoji Kitchen. Returns an image and markdown details. If combination doesn't exist, provides helpful suggestions.",
+    "Mix two emojis together into an official Google Emoji Kitchen sticker mashup. Call this tool whenever the user asks to mix, combine, merge, or mashup emojis, or requests custom stickers or hybrid emojis (e.g. 'cat + fire', 'mashup 🐱 and 🚀', 'crying skull sticker'). Returns base64 PNG image data and Google CDN link. If combination doesn't exist, provides helpful alternative suggestions.",
     {
       left_emoji: z
         .string()
@@ -201,7 +214,7 @@ export function createEmojiKitchenServer(options?: {
   // ==========================================
   server.tool(
     "get_combinations",
-    "Get all compatible partner emojis for a given base emoji, with optional search filtering and pagination limit.",
+    "Get all compatible partner emojis that combine with a given base emoji. Call this tool whenever the user asks what emojis can combine with a specific emoji (e.g. 'what can I mix with avocado?'), or to explore valid options for a mashup.",
     {
       emoji: z
         .string()
@@ -285,7 +298,7 @@ export function createEmojiKitchenServer(options?: {
   // ==========================================
   server.tool(
     "get_random_combination",
-    "Get a random valid Emoji Kitchen mashup, optionally featuring a specific base emoji.",
+    "Get a surprise, valid Emoji Kitchen mashup (either completely random or compatible with a specified base emoji). Call this tool whenever the user asks for a random emoji combination, a surprise sticker, or asks to 'surprise me' with an emoji mix.",
     {
       emoji: z
         .string()
@@ -354,7 +367,7 @@ export function createEmojiKitchenServer(options?: {
   // ==========================================
   server.tool(
     "list_featured_emojis",
-    "List curated featured emojis categorized by theme (e.g. Smileys & Emotion, Animals & Nature, Food & Drink, Objects & Magic, Activities & Symbols).",
+    "List curated featured emojis categorized by visual theme (e.g. Smileys & Emotion, Animals & Nature, Food & Drink, Objects & Magic, Activities & Symbols). Call this tool when the user needs emoji ideas, inspiration, or wants to explore popular combinations.",
     {
       category: z
         .string()
