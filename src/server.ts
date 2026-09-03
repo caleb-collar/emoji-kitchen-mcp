@@ -49,12 +49,63 @@ function getOrComputeStats(metadata: EmojiMetadata): EmojiStats {
   return cachedStats;
 }
 
-export const DEFAULT_SERVER_INSTRUCTIONS =
-  "Emoji Kitchen MCP Server provides official Google Emoji Kitchen sticker mashups combining two emojis into unique illustrations. " +
-  "Use this server whenever the user asks to mix, combine, merge, or mashup emojis (e.g., 'cat + fire', 'mashup 🐱 and 🚀', 'create a crying skull sticker'), " +
-  "or requests custom emoji stickers or hybrid emoji graphics. " +
-  "Always prefer `mix_emojis` to generate combinations and return sticker images. " +
-  "Use `search_emojis` to discover or verify supported emojis when unsure, and `get_combinations` to find valid partner emojis for any base emoji.";
+export type DirectiveMode =
+  | "standard"
+  | "creative"
+  | "funny"
+  | "proactive"
+  | "expressive"
+  | "strict";
+
+export const DIRECTIVE_PRESETS: Record<DirectiveMode, string> = {
+  standard:
+    "Emoji Kitchen MCP Server provides official Google Emoji Kitchen sticker mashups combining two emojis into unique illustrations. " +
+    "Use this server whenever the user asks to mix, combine, merge, or mashup emojis (e.g., 'cat + fire', 'mashup 🐱 and 🚀', 'create a crying skull sticker'), " +
+    "or requests custom emoji stickers or hybrid emoji graphics. " +
+    "Always prefer `mix_emojis` to generate combinations and return sticker images. " +
+    "Use `search_emojis` to discover or verify supported emojis when unsure, and `get_combinations` to find valid partner emojis for any base emoji.",
+
+  creative:
+    "You are equipped with Google Emoji Kitchen! Proactively use the `mix_emojis` tool whenever a relevant, witty, delightful, or creative emoji mashup would enhance your response, entertain the user, or visually illustrate your point. " +
+    "Even if the user does not explicitly ask for an emoji mix, feel free to surprise them with a clever sticker mashup when it fits the mood or humor of the conversation (e.g. mix 🐱 and 🚀 for enthusiasm, 💀 and 😭 when laughing hard, or ☕ and 🪄 for Monday morning magic). " +
+    "Always display the resulting sticker in your response.",
+
+  funny:
+    "You are equipped with Google Emoji Kitchen! Proactively use the `mix_emojis` tool whenever a humorous, silly, or funny emoji mashup would make your answer more entertaining or comedic. " +
+    "Whenever a funny or absurd mixed emoji would be interesting during your response, mix two emojis and display the sticker image to surprise and amuse the user.",
+
+  proactive:
+    "You have access to Google Emoji Kitchen to generate real visual sticker mashups. Whenever a topic or reaction would benefit from a custom graphic or sticker, proactively call `mix_emojis` to illustrate your message with a fitting mashup (e.g. celebration, irony, comfort, enthusiasm).",
+
+  expressive:
+    "Enhance your conversations with visual Emoji Kitchen stickers! Whenever expressing strong emotions, reactions, celebrations, humor, or empathy, look for opportunities to synthesize and display a relevant Emoji Kitchen sticker using `mix_emojis`.",
+
+  strict:
+    "Only call Emoji Kitchen tools when the user explicitly requests an emoji mashup, sticker creation, or emoji combination.",
+};
+
+export const DEFAULT_SERVER_INSTRUCTIONS = DIRECTIVE_PRESETS.standard;
+
+/**
+ * Resolves the server instructions string based on custom text or a preset mode.
+ */
+export function resolveInstructions(options?: {
+  instructions?: string;
+  directiveMode?: DirectiveMode | string;
+}): string {
+  if (options?.instructions && options.instructions.trim().length > 0) {
+    return options.instructions.trim();
+  }
+
+  if (options?.directiveMode) {
+    const key = options.directiveMode.toLowerCase().trim() as DirectiveMode;
+    if (key in DIRECTIVE_PRESETS) {
+      return DIRECTIVE_PRESETS[key];
+    }
+  }
+
+  return DEFAULT_SERVER_INSTRUCTIONS;
+}
 
 /**
  * Creates and configures an McpServer instance with all Emoji Kitchen tools,
@@ -64,14 +115,17 @@ export function createEmojiKitchenServer(options?: {
   name?: string;
   version?: string;
   instructions?: string;
+  directiveMode?: DirectiveMode | string;
 }): McpServer {
+  const instructions = resolveInstructions(options);
+
   const server = new McpServer(
     {
       name: options?.name ?? "emoji-kitchen-mcp",
       version: options?.version ?? "1.0.0",
     },
     {
-      instructions: options?.instructions ?? DEFAULT_SERVER_INSTRUCTIONS,
+      instructions,
     }
   );
 
@@ -519,6 +573,8 @@ export function createEmojiKitchenServer(options?: {
 export async function initializeEmojiKitchenServer(options?: {
   name?: string;
   version?: string;
+  instructions?: string;
+  directiveMode?: DirectiveMode | string;
 }): Promise<McpServer> {
   await loadMetadata();
   return createEmojiKitchenServer(options);

@@ -47,6 +47,10 @@ export {
 export {
   createEmojiKitchenServer,
   initializeEmojiKitchenServer,
+  resolveInstructions,
+  DEFAULT_SERVER_INSTRUCTIONS,
+  DIRECTIVE_PRESETS,
+  type DirectiveMode,
 } from "./server.js";
 
 // Export stdio transport

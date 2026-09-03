@@ -9,6 +9,8 @@ export interface CliOptions {
   transport: "stdio" | "sse";
   port: number;
   host: string;
+  directiveMode?: string;
+  instructions?: string;
   help?: boolean;
   version?: boolean;
 }
@@ -21,17 +23,22 @@ Usage:
   emoji-kitchen-mcp [options]
 
 Options:
-  --stdio              Run with stdio transport (default)
-  --sse                Run HTTP/SSE server
-  -p, --port <number>  Port for SSE server (default: 3000, or env PORT)
-  -h, --host <string>  Host for SSE server (default: 0.0.0.0, or env HOST)
-  -v, --version        Show version number
-  --help, -h           Show this help message
+  --stdio                Run with stdio transport (default)
+  --sse                  Run HTTP/SSE server
+  -p, --port <number>    Port for SSE server (default: 3000, or env PORT)
+  -h, --host <string>    Host for SSE server (default: 0.0.0.0, or env HOST)
+  -d, --directive <mode> Directive preset for LLM auto-usage:
+                         standard | creative | funny | proactive | expressive | strict
+  --instructions <text>  Custom system instructions broadcast to the LLM
+  -v, --version          Show version number
+  --help, -h             Show this help message
 
 Environment Variables:
-  TRANSPORT            Transport mode: "stdio" | "sse" (default: "stdio")
-  PORT                 Port for SSE server (default: 3000)
-  HOST                 Host for SSE server (default: "0.0.0.0")
+  TRANSPORT              Transport mode: "stdio" | "sse" (default: "stdio")
+  PORT                   Port for SSE server (default: 3000)
+  HOST                   Host for SSE server (default: "0.0.0.0")
+  DIRECTIVE_MODE         Directive preset: standard | creative | funny | proactive | expressive | strict
+  DIRECTIVE_TEXT         Custom system instructions (or MCP_INSTRUCTIONS)
 `;
 
 /**
@@ -51,10 +58,15 @@ export function parseArgs(argv: string[] = process.argv.slice(2)): CliOptions {
       : 3000;
 
   const defaultHost = process.env.HOST || "0.0.0.0";
+  const defaultDirectiveMode = process.env.DIRECTIVE_MODE;
+  const defaultInstructions =
+    process.env.DIRECTIVE_TEXT || process.env.MCP_INSTRUCTIONS;
 
   let transport: "stdio" | "sse" = defaultTransport;
   let port = defaultPort;
   let host = defaultHost;
+  let directiveMode: string | undefined = defaultDirectiveMode;
+  let instructions: string | undefined = defaultInstructions;
   let help = false;
   let version = false;
 
@@ -96,6 +108,24 @@ export function parseArgs(argv: string[] = process.argv.slice(2)): CliOptions {
       host = arg.slice("--host=".length);
     } else if (arg.startsWith("-h=")) {
       host = arg.slice("-h=".length);
+    } else if (arg === "-d" || arg === "--directive") {
+      const next = argv[++i];
+      if (next !== undefined) {
+        directiveMode = next;
+      }
+    } else if (arg.startsWith("--directive=")) {
+      directiveMode = arg.slice("--directive=".length);
+    } else if (arg.startsWith("-d=")) {
+      directiveMode = arg.slice("-d=".length);
+    } else if (arg === "--instructions" || arg === "--directive-text") {
+      const next = argv[++i];
+      if (next !== undefined) {
+        instructions = next;
+      }
+    } else if (arg.startsWith("--instructions=")) {
+      instructions = arg.slice("--instructions=".length);
+    } else if (arg.startsWith("--directive-text=")) {
+      instructions = arg.slice("--directive-text=".length);
     } else if (arg === "-h") {
       const next = argv[i + 1];
       if (next !== undefined && !next.startsWith("-")) {
@@ -107,7 +137,7 @@ export function parseArgs(argv: string[] = process.argv.slice(2)): CliOptions {
     }
   }
 
-  return { transport, port, host, help, version };
+  return { transport, port, host, directiveMode, instructions, help, version };
 }
 
 /**
@@ -133,9 +163,14 @@ export async function runCli(
     console.error(
       `Starting Emoji Kitchen MCP server with SSE transport on ${options.host}:${options.port}...`
     );
+    if (options.directiveMode) {
+      console.error(`Using directive preset: ${options.directiveMode}`);
+    }
     const sse = await startSseServer({
       port: options.port,
       host: options.host,
+      directiveMode: options.directiveMode,
+      instructions: options.instructions,
     });
     console.error(
       `Emoji Kitchen MCP SSE server running at http://${sse.host}:${sse.port}`
@@ -159,7 +194,13 @@ export async function runCli(
     return sse;
   } else {
     // stdio transport (default)
-    const stdio = await startStdioServer();
+    if (options.directiveMode) {
+      console.error(`Using directive preset: ${options.directiveMode}`);
+    }
+    const stdio = await startStdioServer({
+      directiveMode: options.directiveMode,
+      instructions: options.instructions,
+    });
 
     const handleSignal = async (signal: string) => {
       console.error(`Received ${signal}, shutting down...`);

@@ -547,12 +547,54 @@ Usage:
   emoji-kitchen-mcp [options]
 
 Options:
-  --stdio              Run with stdio transport (default)
-  --sse                Run HTTP/SSE server
-  -p, --port <number>  Port for SSE server (default: 3000, or env PORT)
-  -h, --host <string>  Host for SSE server (default: 0.0.0.0, or env HOST)
-  -v, --version        Show version number
-  --help, -h           Show help message
+  --stdio                Run with stdio transport (default)
+  --sse                  Run HTTP/SSE server
+  -p, --port <number>    Port for SSE server (default: 3000, or env PORT)
+  -h, --host <string>    Host for SSE server (default: 0.0.0.0, or env HOST)
+  -d, --directive <mode> Directive preset for LLM auto-usage:
+                         standard | creative | funny | proactive | expressive | strict
+  --instructions <text>  Custom system instructions broadcast to the LLM
+  -v, --version          Show version number
+  --help, -h             Show help message
+```
+
+#### Directive Presets (Auto-Usage Behavior)
+
+Control how eagerly and creatively the LLM calls `mix_emojis` during general conversation:
+
+| Mode | Trigger Behavior | Description |
+|---|---|---|
+| `standard` *(default)* | Balanced / On-Intent | Calls when the user asks to mix, combine, or create stickers/mashups. |
+| `creative` | Proactive | Proactively mixes emojis whenever a clever or creative sticker would enhance the answer. |
+| `funny` | Humorous / Playful | Mixes funny or silly stickers to amuse the user and make responses more entertaining. |
+| `proactive` | Visual First | Proactively illustrates points, concepts, and reactions with custom sticker graphics. |
+| `expressive` | Emotional / Reactive | Emphasizes emotional reactions, celebrations, and empathy with sticker mashups. |
+| `strict` | On-Demand Only | Only calls tools when the user explicitly requests an emoji mashup or sticker. |
+
+#### Custom Directives Example
+You can pass custom behavioral directives at launch:
+```bash
+# Via CLI flag
+emoji-kitchen-mcp --directive funny
+# Or custom instructions
+emoji-kitchen-mcp --instructions "Use this whenever relevant mixed emojis would be interesting or funny during the response"
+```
+
+In client configs (`claude_desktop_config.json`, Cursor, Antigravity):
+```json
+{
+  "mcpServers": {
+    "emoji-kitchen": {
+      "command": "node",
+      "args": [
+        "C:/Users/Caleb/DataDomain/Repos/emoji-kitchen-mcp/dist/index.js",
+        "--stdio",
+        "--directive",
+        "funny"
+      ]
+    }
+  }
+}
 ```
 
 #### Environment Variables
@@ -561,6 +603,8 @@ Options:
 | `TRANSPORT` | `stdio`, `sse` | `stdio` | Transport protocol to use. |
 | `PORT` | Number | `3000` | Port for SSE HTTP server. |
 | `HOST` | String | `0.0.0.0` | Host IP binding for SSE HTTP server. |
+| `DIRECTIVE_MODE` | `standard`, `creative`, `funny`, `proactive`, `expressive`, `strict` | `standard` | Directive preset for auto-usage. |
+| `DIRECTIVE_TEXT` | String | — | Custom system instructions string (or `MCP_INSTRUCTIONS`). |
 | `NODE_ENV` | `production`, `development`, `test` | `development` | Node runtime environment. |
 
 ---

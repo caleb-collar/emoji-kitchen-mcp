@@ -20,6 +20,8 @@ export interface SseSession {
 export interface SseServerOptions {
   port?: number;
   host?: string;
+  instructions?: string;
+  directiveMode?: string;
 }
 
 /**
@@ -38,7 +40,10 @@ export interface SseServerInstance {
  * Creates and configures the Express application for the SSE transport,
  * along with the session map.
  */
-export function createSseApp(): {
+export function createSseApp(options?: {
+  instructions?: string;
+  directiveMode?: string;
+}): {
   app: express.Express;
   sessions: Map<string, SseSession>;
 } {
@@ -92,7 +97,10 @@ export function createSseApp(): {
   app.get("/sse", async (req, res) => {
     try {
       const transport = new SSEServerTransport("/messages", res);
-      const mcpServer = createEmojiKitchenServer();
+      const mcpServer = createEmojiKitchenServer({
+        instructions: options?.instructions,
+        directiveMode: options?.directiveMode,
+      });
       const sessionId = transport.sessionId;
 
       const session: SseSession = { transport, server: mcpServer };
@@ -166,15 +174,8 @@ export function createSseApp(): {
  * @returns An object containing the HTTP server instance, actual port, host, and close function.
  */
 export async function startSseServer(
-  options?: { port?: number; host?: string }
-): Promise<{
-  server: http.Server;
-  port: number;
-  host: string;
-  close: () => Promise<void>;
-  app: express.Express;
-  sessions: Map<string, SseSession>;
-}> {
+  options?: SseServerOptions
+): Promise<SseServerInstance> {
   // Pre-load emoji metadata
   await loadMetadata();
 
@@ -186,7 +187,7 @@ export async function startSseServer(
       : 3000);
   const host = options?.host ?? (process.env.HOST || "0.0.0.0");
 
-  const { app, sessions } = createSseApp();
+  const { app, sessions } = createSseApp(options);
   const server = http.createServer(app);
 
   await new Promise<void>((resolve, reject) => {

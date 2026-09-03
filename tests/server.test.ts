@@ -4,6 +4,8 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   createEmojiKitchenServer,
   initializeEmojiKitchenServer,
+  resolveInstructions,
+  DIRECTIVE_PRESETS,
   loadMetadata,
 } from "../src/index.js";
 
@@ -61,6 +63,53 @@ describe("Phase 3: MCP Server & Tool Definitions", () => {
       expect(instructions).toBeDefined();
       expect(instructions).toContain("Emoji Kitchen MCP Server provides official Google Emoji Kitchen sticker mashups");
       expect(instructions).toContain("mix_emojis");
+    });
+
+    it("should resolve instructions for preset modes correctly", () => {
+      expect(resolveInstructions({ directiveMode: "funny" })).toBe(DIRECTIVE_PRESETS.funny);
+      expect(resolveInstructions({ directiveMode: "creative" })).toBe(DIRECTIVE_PRESETS.creative);
+      expect(resolveInstructions({ directiveMode: "proactive" })).toBe(DIRECTIVE_PRESETS.proactive);
+      expect(resolveInstructions({ directiveMode: "expressive" })).toBe(DIRECTIVE_PRESETS.expressive);
+      expect(resolveInstructions({ directiveMode: "strict" })).toBe(DIRECTIVE_PRESETS.strict);
+      expect(resolveInstructions({ directiveMode: "standard" })).toBe(DIRECTIVE_PRESETS.standard);
+    });
+
+    it("should allow custom instructions to override preset mode", () => {
+      const custom = "Custom rule: use when funny or interesting";
+      expect(resolveInstructions({ instructions: custom, directiveMode: "strict" })).toBe(custom);
+    });
+
+    it("should broadcast custom instructions to client upon initialization", async () => {
+      const customServer = createEmojiKitchenServer({
+        instructions: "Use this when relevant mixed emojis would be interesting or funny during the response",
+      });
+      const [cTransport, sTransport] = InMemoryTransport.createLinkedPair();
+      await customServer.connect(sTransport);
+
+      const customClient = new Client({ name: "c-test", version: "1.0.0" }, { capabilities: {} });
+      await customClient.connect(cTransport);
+
+      expect(customClient.getInstructions()).toBe(
+        "Use this when relevant mixed emojis would be interesting or funny during the response"
+      );
+
+      await customClient.close();
+      await customServer.close();
+    });
+
+    it("should broadcast funny preset instructions when directiveMode is funny", async () => {
+      const funnyServer = createEmojiKitchenServer({ directiveMode: "funny" });
+      const [cTransport, sTransport] = InMemoryTransport.createLinkedPair();
+      await funnyServer.connect(sTransport);
+
+      const funnyClient = new Client({ name: "f-test", version: "1.0.0" }, { capabilities: {} });
+      await funnyClient.connect(cTransport);
+
+      expect(funnyClient.getInstructions()).toBe(DIRECTIVE_PRESETS.funny);
+      expect(funnyClient.getInstructions()).toContain("humorous, silly, or funny");
+
+      await funnyClient.close();
+      await funnyServer.close();
     });
   });
 

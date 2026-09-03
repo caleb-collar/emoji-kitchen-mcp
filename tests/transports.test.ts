@@ -304,6 +304,35 @@ describe("Phase 4: Transports & CLI Entry", () => {
         process.env = originalEnv;
       }
     });
+
+    it("should parse --directive and -d flags", () => {
+      expect(parseArgs(["--directive", "funny"]).directiveMode).toBe("funny");
+      expect(parseArgs(["-d", "creative"]).directiveMode).toBe("creative");
+      expect(parseArgs(["--directive=proactive"]).directiveMode).toBe("proactive");
+      expect(parseArgs(["-d=strict"]).directiveMode).toBe("strict");
+    });
+
+    it("should parse --instructions and --directive-text flags", () => {
+      const custom = "Use when funny or interesting";
+      expect(parseArgs(["--instructions", custom]).instructions).toBe(custom);
+      expect(parseArgs([`--instructions=${custom}`]).instructions).toBe(custom);
+      expect(parseArgs(["--directive-text", custom]).instructions).toBe(custom);
+      expect(parseArgs([`--directive-text=${custom}`]).instructions).toBe(custom);
+    });
+
+    it("should respect DIRECTIVE_MODE and DIRECTIVE_TEXT environment variables", () => {
+      const originalEnv = { ...process.env };
+      try {
+        process.env.DIRECTIVE_MODE = "funny";
+        process.env.DIRECTIVE_TEXT = "Custom instructions from env";
+
+        const opts = parseArgs([]);
+        expect(opts.directiveMode).toBe("funny");
+        expect(opts.instructions).toBe("Custom instructions from env");
+      } finally {
+        process.env = originalEnv;
+      }
+    });
   });
 });
 

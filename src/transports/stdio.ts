@@ -21,6 +21,8 @@ export interface StdioServerOptions {
   server?: McpServer;
   stdin?: Readable;
   stdout?: Writable;
+  instructions?: string;
+  directiveMode?: string;
 }
 
 /**
@@ -55,7 +57,12 @@ export async function startStdioServer(
     server = options as McpServer;
   } else if (options && typeof options === "object") {
     const opts = options as StdioServerOptions;
-    server = opts.server ?? createEmojiKitchenServer();
+    server =
+      opts.server ??
+      createEmojiKitchenServer({
+        instructions: opts.instructions,
+        directiveMode: opts.directiveMode,
+      });
     stdin = opts.stdin;
     stdout = opts.stdout;
   } else {
