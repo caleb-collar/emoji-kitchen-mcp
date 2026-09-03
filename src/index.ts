@@ -35,3 +35,10 @@ export {
   getRandomCombination,
   getFeaturedEmojis,
 } from "./engine/mixer.js";
+
+// Export MCP server
+export {
+  createEmojiKitchenServer,
+  initializeEmojiKitchenServer,
+} from "./server.js";
+
