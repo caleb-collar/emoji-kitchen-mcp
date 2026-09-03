@@ -18,6 +18,9 @@ A high-performance, headless [Model Context Protocol (MCP)](https://modelcontext
 - [Resources & Prompts](#resources--prompts)
   - [Resources](#resources)
   - [Prompts](#prompts)
+- [Auto-Usage Directives & Behavioral Presets](#auto-usage-directives--behavioral-presets)
+  - [Preset Modes](#preset-modes)
+  - [Custom Directives](#custom-directives)
 - [Client Integration Guides](#client-integration-guides)
   - [Claude Desktop](#claude-desktop)
   - [Cursor IDE](#cursor-ide)
@@ -48,6 +51,10 @@ A high-performance, headless [Model Context Protocol (MCP)](https://modelcontext
 - **⚡ Dual Transports:**
   - **`stdio`**: Standard input/output transport for local desktop integrations (Claude Desktop, Cursor, local CLI).
   - **`HTTP / SSE`**: Server-Sent Events with session management and CORS for remote agent orchestration, cloud containers, and web chat clients.
+- **🎯 Configurable Auto-Usage Directives & Behavioral Presets:**
+  - Launch with `--directive funny` to instruct the LLM to proactively mix stickers when funny, witty, or entertaining during conversation.
+  - Choose between 6 built-in presets (`standard`, `creative`, `funny`, `proactive`, `expressive`, `strict`) or supply custom instructions via `--instructions "..."`.
+  - Broadcast directly into the LLM system prompt via the standard MCP protocol `instructions` handshake.
 - **🖼️ Multimodal Vision Outputs:**
   - Returns raw base64-encoded PNG image data directly within the MCP tool response.
   - Automatically caches remote assets with an in-memory LRU cache to reduce latency and bandwidth.
@@ -311,6 +318,37 @@ Guides the LLM through creating themed emoji combinations matching user concepts
 
 - **Arguments:**
   - `theme` (`string`, required): The target theme or aesthetic concept.
+
+---
+
+## 🎯 Auto-Usage Directives & Behavioral Presets
+
+When integrated with an LLM, the MCP server automatically broadcasts an **`instructions`** payload during the initial MCP handshake. This informs the model *when* and *how* to use the tools without requiring you to prompt it every time.
+
+You can customize this behavior using the `--directive` flag or environment variables.
+
+### Preset Modes
+
+| Mode | Trigger Behavior | Broadcast Directive to the LLM |
+|---|---|---|
+| `standard` *(default)* | Balanced / On-Intent | Calls when the user asks to mix, combine, or create stickers/mashups. |
+| `creative` | Proactive & Expressive | *"Proactively use the `mix_emojis` tool whenever a relevant, witty, delightful, or creative emoji mashup would enhance your response, entertain the user, or visually illustrate your point. Even if the user does not explicitly ask..."* |
+| `funny` | Humorous & Playful | *"Proactively use the `mix_emojis` tool whenever a humorous, silly, or funny emoji mashup would make your answer more entertaining or comedic. Whenever an absurd mixed emoji would be interesting, mix two emojis and display the sticker..."* |
+| `proactive` | Visual First | *"Whenever a topic or reaction would benefit from a custom graphic or sticker, proactively call `mix_emojis` to illustrate your message with a fitting mashup (e.g. celebration, irony, comfort, enthusiasm)."* |
+| `expressive` | Emotional & Reactive | *"Whenever expressing strong emotions, reactions, celebrations, humor, or empathy, look for opportunities to synthesize and display a relevant Emoji Kitchen sticker using `mix_emojis`."* |
+| `strict` | On-Demand Only | *"Only call Emoji Kitchen tools when the user explicitly requests an emoji mashup, sticker creation, or emoji combination."* |
+
+### Custom Directives
+
+You can also pass arbitrary custom instructions directly via `--instructions`:
+
+```bash
+# Via CLI flag
+emoji-kitchen-mcp --directive funny
+
+# Or with custom instruction text
+emoji-kitchen-mcp --instructions "Use this when relevant mixed emojis would be interesting or funny during the response"
+```
 
 ---
 
