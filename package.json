@@ -9,6 +9,25 @@
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/caleb-collar/emoji-kitchen-mcp.git"
+  },
+  "homepage": "https://github.com/caleb-collar/emoji-kitchen-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/caleb-collar/emoji-kitchen-mcp/issues"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "emoji",
+    "emoji-kitchen",
+    "google-emoji-kitchen",
+    "llm",
+    "ai",
+    "stickers"
+  ],
+  "license": "MIT",
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",

@@ -1,6 +1,6 @@
-# 🧑🍳 Emoji Kitchen MCP Server
+# 🧑‍🍳 Emoji Kitchen MCP Server
 
-A high-performance, headless [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server that brings Google's **Emoji Kitchen** to Large Language Models and AI agents. Search, query, and synthesize over **100,000+ unique emoji combinations** across **619 supported base emojis** with instant resolution and multimodal image returns.
+A high-performance, headless [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server that brings Google's **Emoji Kitchen** to Large Language Models and AI agents. Search, query, and synthesize over **165,000+ unique emoji combinations** across **619 supported base emojis** with instant resolution and multimodal image returns.
 
 ---
 
@@ -101,7 +101,7 @@ A high-performance, headless [Model Context Protocol (MCP)](https://modelcontext
 |                          ▼                            |
 |  ┌──────────────────────────────────────────────────┐ |
 |  │          Local Bundled metadata.json             │ |
-|  │   (619 emojis · 100,000+ indexed combinations)   │ |
+|  │   (619 emojis · 165,000+ unique combinations)    │ |
 |  └──────────────────────────────────────────────────┘ |
 +-------------------------------------------------------+
 ```
@@ -299,8 +299,8 @@ Retrieve curated emojis categorized by visual themes. Ideal for kickstarting ins
 {
   "version": "1.0.0",
   "totalEmojis": 619,
-  "totalCombinations": 100256,
-  "totalCombinationEntries": 100256
+  "totalCombinations": 165621,
+  "totalCombinationEntries": 330640
 }
 ```
 
